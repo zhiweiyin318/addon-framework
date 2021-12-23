@@ -14,14 +14,17 @@ import (
 	"github.com/spf13/pflag"
 	utilflag "k8s.io/component-base/cli/flag"
 	"k8s.io/component-base/logs"
+	"open-cluster-management.io/addon-framework/pkg/addonfactory"
+	"open-cluster-management.io/addon-framework/pkg/agent"
 	"open-cluster-management.io/addon-framework/pkg/version"
 
-	utilrand "k8s.io/apimachinery/pkg/util/rand"
 	"open-cluster-management.io/addon-framework/pkg/addonmanager"
 )
 
 // addOnAgentInstallationNamespace is the namespace on the managed cluster to install the helloworld addon agent.
 const addOnAgentInstallationNamespace = "default"
+
+const addonName = "helloworld"
 
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano())
@@ -78,12 +81,17 @@ func runController(ctx context.Context, controllerContext *controllercmd.Control
 	if err != nil {
 		return err
 	}
-	agentRegistration := &helloWorldAgent{
-		kubeConfig: controllerContext.KubeConfig,
-		recorder:   controllerContext.EventRecorder,
-		agentName:  utilrand.String(5),
+
+	agentAddon, err := addonfactory.NewAgentAddonFactoryWithTemplates(addonName, fs, manifestFiles...).
+		WithTemplateConfig(newTemplateConfig()).
+		WithInstallStrategy(&agent.InstallStrategy{Type: agent.InstallAll, InstallNamespace: addOnAgentInstallationNamespace}).
+		WithAgentRegistrationOption(newRegistrationOption(controllerContext.KubeConfig, controllerContext.EventRecorder, addonName)).
+		Build()
+	if err != nil {
+		return err
 	}
-	mgr.AddAgent(agentRegistration)
+
+	mgr.AddAgent(agentAddon)
 	mgr.Start(ctx)
 
 	<-ctx.Done()
