@@ -1,0 +1,9 @@
+apiVersion: addon.open-cluster-management.io/v1alpha1
+kind: ManagedClusterAddOn
+metadata:
+  name: klusterlet-addon-policy
+  namespace: cluster1
+  annotations:
+    "templateConfig": '{"HTTPProxy":"http://1.1.1.1","HTTPSProxy":"http://1.1.1.1","NOProxy":"http://localhost","NodeSelector":{"host":"ssd"}}'
+spec:
+  installNamespace: open-cluster-management-agent-addon

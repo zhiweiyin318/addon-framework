@@ -1,0 +1,30 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: policy-controller
+  labels:
+    app: policy-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: policy-controller
+  template:
+    metadata:
+      labels:
+        app: policy-controller
+    spec:
+      serviceAccountName: policy-sa
+      containers:
+      - name: policy-controller
+        image: policy-controller
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: EXAMPLE_IMAGE_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: image-config
+              key: EXAMPLE_IMAGE_NAME
+        args:
+          - "/policy"
+          - "controller"

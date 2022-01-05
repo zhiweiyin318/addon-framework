@@ -1,0 +1,71 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: klusterlet-addon-policy-config-policy
+  labels:
+    component: "governance"
+    controller: "operator"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: klusterlet-addon-policy-config-policy
+      component: "governance"
+  template:
+    metadata:
+      annotations:
+        target.workload.openshift.io/management: '{"effect": "PreferredDuringScheduling"}'
+      labels:
+        app: klusterlet-addon-policy-config-policy
+        component: "governance"
+        controller: "operator"
+        name: config-policy-ctrl
+    spec:
+      serviceAccountName: klusterlet-addon-policy
+      containers:
+      - name: config-policy-controller
+        image: quay.io/open-cluster-management/config-policy-controller:latest-dev
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            memory: 128Mi
+          limits:
+            memory: 256Mi
+        command: ["config-policy-controller"]
+        args:
+          - "--enable-lease=true"
+          - "--cluster-name=cluster1"
+        env:
+          - name: WATCH_NAMESPACE
+            value: cluster1
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: OPERATOR_NAME
+            value: "config-policy-ctrl"
+          - name: HTTP_PROXY
+            value: http://1.1.1.1
+          - name: HTTPS_PROXY
+            value: http://1.1.1.1
+          - name: NO_PROXY
+            value: localhost
+        livenessProbe: null
+        readinessProbe: null
+      volumes:
+        - name: klusterlet-config
+          secret:
+            secretName: klusterlet-addon-policy-hub-kubeconfig
+      imagePullSecrets:
+      - name: open-cluster-management-image-pull-credentials
+      nodeSelector:
+        "host": "ssd"
+      tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "infra"
+        effect: "NoSchedule"
+      - key: node-role.kubernetes.io/infra
+        operator: Exists
+        effect: NoSchedule

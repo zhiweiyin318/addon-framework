@@ -1,0 +1,185 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: {{ .AddonName }}-framework
+  labels:
+    app: {{ .AddonName }}-framework
+    component: "governance"
+    controller: "operator"
+    hubKubeconfigSecret: {{ .KubeConfigSecret }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .AddonName }}-framework
+      component: "governance"
+  template:
+    metadata:
+      annotations:
+        target.workload.openshift.io/management: '{"effect": "PreferredDuringScheduling"}'
+      labels:
+        app: {{ .AddonName }}-framework
+        component: "governance"
+        controller: "operator"
+    spec:
+      serviceAccountName: {{ .AddonName }}
+      containers:
+      {{- if not .IsHubCluster }}
+      - name: spec-sync
+        image: "{{ .GovernancePolicySpecSyncImage }}"
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            memory: 128Mi
+          limits:
+            memory: 256Mi
+        command: ["governance-policy-spec-sync"]
+        env:
+          - name: WATCH_NAMESPACE
+            value: "{{ .ClusterName }}"
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: OPERATOR_NAME
+            value: "governance-policy-spec-sync"
+          {{- if .HTTPProxy }}
+          - name: HTTP_PROXY
+            value: {{ .HTTPProxy }}
+          {{- end }}
+          {{- if .HTTPSProxy }}
+          - name: HTTPS_PROXY
+            value: {{ .HTTPSProxy }}
+          {{- end }}
+          {{- if .NOProxy }}
+          - name: NO_PROXY
+            value: {{ .NOProxy }}
+          {{- end }}
+        args:
+          - '--enable-lease=true'
+          - '--hub-cluster-configfile=/var/run/klusterlet/kubeconfig'
+          - '--health-probe-bind-address=:8081'
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          failureThreshold: 3
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8081
+          failureThreshold: 3
+          periodSeconds: 10
+        volumeMounts:
+          - name: klusterlet-config
+            mountPath: /var/run/klusterlet
+      {{- end }}
+      - name: status-sync
+        image: "{{ .GovernancePolicyStatusSyncImage }}"
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            memory: 128Mi
+          limits:
+            memory: 256Mi
+        command: ["governance-policy-status-sync"]
+        args:
+          - '--enable-lease=true'
+          - '--hub-cluster-configfile=/var/run/klusterlet/kubeconfig'
+          - '--health-probe-bind-address=:8082'
+        env:
+          - name: WATCH_NAMESPACE
+            value: "{{ .ClusterName }}"
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: OPERATOR_NAME
+            value: "governance-policy-status-sync"
+          {{- if .IsHubCluster }}
+          - name: ON_MULTICLUSTERHUB
+            value: "true"
+          {{- end }}
+          {{- if .HTTPProxy }}
+          - name: HTTP_PROXY
+            value: {{ .HTTPProxy }}
+          {{- end }}
+          {{- if .HTTPSProxy }}
+          - name: HTTPS_PROXY
+            value: {{ .HTTPSProxy }}
+          {{- end }}
+          {{- if .NOProxy }}
+          - name: NO_PROXY
+            value: {{ .NOProxy }}
+          {{- end }}
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8082
+          failureThreshold: 3
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8082
+          failureThreshold: 3
+          periodSeconds: 10
+        volumeMounts:
+          - name: klusterlet-config
+            mountPath: /var/run/klusterlet
+      - name: template-sync
+        image: "{{ .GovernancePolicySpecSyncImage }}"
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            memory: 128Mi
+          limits:
+            memory: 256Mi
+        command: ["governance-policy-template-sync"]
+        env:
+          - name: WATCH_NAMESPACE
+            value: "{{ .ClusterName }}"
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: OPERATOR_NAME
+            value: "governance-policy-template-sync"
+          {{- if .HTTPProxy }}
+          - name: HTTP_PROXY
+            value: {{ .HTTPProxy }}
+          {{- end }}
+          {{- if .HTTPSProxy }}
+          - name: HTTPS_PROXY
+            value: {{ .HTTPSProxy }}
+          {{- end }}
+          {{- if .NOProxy }}
+          - name: NO_PROXY
+            value: {{ .NOProxy }}
+          {{- end }}
+        livenessProbe: null
+        readinessProbe: null
+      volumes:
+        - name: klusterlet-config
+          secret:
+            secretName: {{ .KubeConfigSecret }}
+      {{- if .ImagePullSecret }}
+      imagePullSecrets:
+      - name: "{{ .ImagePullSecret }}"
+      {{- end }}
+      {{- if .NodeSelector }}
+      nodeSelector:
+        {{- range $key, $value := .NodeSelector }}
+        "{{ $key }}": "{{ $value }}"
+        {{- end }}
+      {{- end }}
+      tolerations:
+        - key: "dedicated"
+          operator: "Equal"
+          value: "infra"
+          effect: "NoSchedule"
+        - key: node-role.kubernetes.io/infra
+          operator: Exists
+          effect: NoSchedule

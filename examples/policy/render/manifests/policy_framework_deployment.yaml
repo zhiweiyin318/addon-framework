@@ -1,0 +1,155 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: klusterlet-addon-policy-framework
+  labels:
+    app: klusterlet-addon-policy-framework
+    component: "governance"
+    controller: "operator"
+    hubKubeconfigSecret: klusterlet-addon-policy-hub-kubeconfig
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: klusterlet-addon-policy-framework
+      component: "governance"
+  template:
+    metadata:
+      annotations:
+        target.workload.openshift.io/management: '{"effect": "PreferredDuringScheduling"}'
+      labels:
+        app: klusterlet-addon-policy-framework
+        component: "governance"
+        controller: "operator"
+    spec:
+      serviceAccountName: klusterlet-addon-policy
+      containers:
+      - name: spec-sync
+        image: "quay.io/open-cluster-management/governance-policy-spec-sync:latest-dev"
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            memory: 128Mi
+          limits:
+            memory: 256Mi
+        command: ["governance-policy-spec-sync"]
+        env:
+          - name: WATCH_NAMESPACE
+            value: "cluster1"
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: OPERATOR_NAME
+            value: "governance-policy-spec-sync"
+          - name: HTTP_PROXY
+            value: http://1.1.1.1
+          - name: HTTPS_PROXY
+            value: http://1.1.1.1
+          - name: NO_PROXY
+            value: localhost
+        args:
+          - '--enable-lease=true'
+          - '--hub-cluster-configfile=/var/run/klusterlet/kubeconfig'
+          - '--health-probe-bind-address=:8081'
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          failureThreshold: 3
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8081
+          failureThreshold: 3
+          periodSeconds: 10
+        volumeMounts:
+          - name: klusterlet-config
+            mountPath: /var/run/klusterlet
+      - name: status-sync
+        image: "quay.io/open-cluster-management/governance-policy-status-sync:latest-dev"
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            memory: 128Mi
+          limits:
+            memory: 256Mi
+        command: ["governance-policy-status-sync"]
+        args:
+          - '--enable-lease=true'
+          - '--hub-cluster-configfile=/var/run/klusterlet/kubeconfig'
+          - '--health-probe-bind-address=:8082'
+        env:
+          - name: WATCH_NAMESPACE
+            value: "cluster1"
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: OPERATOR_NAME
+            value: "governance-policy-status-sync"
+          - name: HTTP_PROXY
+            value: http://1.1.1.1
+          - name: HTTPS_PROXY
+            value: http://1.1.1.1
+          - name: NO_PROXY
+            value: localhost
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8082
+          failureThreshold: 3
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8082
+          failureThreshold: 3
+          periodSeconds: 10
+        volumeMounts:
+          - name: klusterlet-config
+            mountPath: /var/run/klusterlet
+      - name: template-sync
+        image: "quay.io/open-cluster-management/governance-policy-spec-sync:latest-dev"
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            memory: 128Mi
+          limits:
+            memory: 256Mi
+        command: ["governance-policy-template-sync"]
+        env:
+          - name: WATCH_NAMESPACE
+            value: "cluster1"
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: OPERATOR_NAME
+            value: "governance-policy-template-sync"
+          - name: HTTP_PROXY
+            value: http://1.1.1.1
+          - name: HTTPS_PROXY
+            value: http://1.1.1.1
+          - name: NO_PROXY
+            value: localhost
+        livenessProbe: null
+        readinessProbe: null
+      volumes:
+        - name: klusterlet-config
+          secret:
+            secretName: klusterlet-addon-policy-hub-kubeconfig
+      imagePullSecrets:
+      - name: "open-cluster-management-image-pull-credentials"
+      nodeSelector:
+        "host": "ssd"
+      tolerations:
+        - key: "dedicated"
+          operator: "Equal"
+          value: "infra"
+          effect: "NoSchedule"
+        - key: node-role.kubernetes.io/infra
+          operator: Exists
+          effect: NoSchedule

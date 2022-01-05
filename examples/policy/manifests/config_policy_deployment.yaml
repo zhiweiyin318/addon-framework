@@ -1,0 +1,83 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: {{ .AddonName }}-config-policy
+  labels:
+    component: "governance"
+    controller: "operator"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .AddonName }}-config-policy
+      component: "governance"
+  template:
+    metadata:
+      annotations:
+        target.workload.openshift.io/management: '{"effect": "PreferredDuringScheduling"}'
+      labels:
+        app: {{ .AddonName }}-config-policy
+        component: "governance"
+        controller: "operator"
+        name: config-policy-ctrl
+    spec:
+      serviceAccountName: klusterlet-addon-policy
+      containers:
+      - name: config-policy-controller
+        image: {{ .PolicyControllerImage }}
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            memory: 128Mi
+          limits:
+            memory: 256Mi
+        command: ["config-policy-controller"]
+        args:
+          - "--enable-lease=true"
+          - "--cluster-name={{ .ClusterName }}"
+        env:
+          - name: WATCH_NAMESPACE
+            value: {{ .ClusterName }}
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: OPERATOR_NAME
+            value: "config-policy-ctrl"
+          {{- if .HTTPProxy }}
+          - name: HTTP_PROXY
+            value: {{ .HTTPProxy }}
+          {{- end }}
+          {{- if .HTTPSProxy }}
+          - name: HTTPS_PROXY
+            value: {{ .HTTPSProxy }}
+          {{- end }}
+          {{- if .NOProxy }}
+          - name: NO_PROXY
+            value: {{ .NOProxy }}
+          {{- end }}
+        livenessProbe: null
+        readinessProbe: null
+      volumes:
+        - name: klusterlet-config
+          secret:
+            secretName: {{ .KubeConfigSecret }}
+      {{- if .ImagePullSecret }}
+      imagePullSecrets:
+      - name: {{ .ImagePullSecret }}
+      {{- end }}
+      {{- if .NodeSelector }}
+      nodeSelector:
+        {{- range $key, $value := .NodeSelector }}
+        "{{ $key }}": "{{ $value }}"
+        {{- end }}
+      {{- end }}
+      tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "infra"
+        effect: "NoSchedule"
+      - key: node-role.kubernetes.io/infra
+        operator: Exists
+        effect: NoSchedule
