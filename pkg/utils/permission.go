@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/zhiweiyin318/addon-framework/pkg/agent"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -11,7 +12,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	rbacclientv1 "k8s.io/client-go/kubernetes/typed/rbac/v1"
 	"k8s.io/utils/pointer"
-	"open-cluster-management.io/addon-framework/pkg/agent"
 	addonapiv1alpha1 "open-cluster-management.io/api/addon/v1alpha1"
 	clusterv1 "open-cluster-management.io/api/cluster/v1"
 )

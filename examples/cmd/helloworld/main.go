@@ -11,19 +11,19 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"github.com/zhiweiyin318/addon-framework/examples/cmdfactory"
+	"github.com/zhiweiyin318/addon-framework/examples/helloworld"
+	"github.com/zhiweiyin318/addon-framework/examples/helloworld/agent"
+	"github.com/zhiweiyin318/addon-framework/pkg/addonfactory"
+	addonagent "github.com/zhiweiyin318/addon-framework/pkg/agent"
+	"github.com/zhiweiyin318/addon-framework/pkg/version"
 	"k8s.io/client-go/rest"
 	utilflag "k8s.io/component-base/cli/flag"
 	"k8s.io/component-base/logs"
 	"k8s.io/klog/v2"
-	"open-cluster-management.io/addon-framework/examples/cmdfactory"
-	"open-cluster-management.io/addon-framework/examples/helloworld"
-	"open-cluster-management.io/addon-framework/examples/helloworld/agent"
-	"open-cluster-management.io/addon-framework/pkg/addonfactory"
-	addonagent "open-cluster-management.io/addon-framework/pkg/agent"
-	"open-cluster-management.io/addon-framework/pkg/version"
 
+	"github.com/zhiweiyin318/addon-framework/pkg/addonmanager"
 	utilrand "k8s.io/apimachinery/pkg/util/rand"
-	"open-cluster-management.io/addon-framework/pkg/addonmanager"
 )
 
 func main() {

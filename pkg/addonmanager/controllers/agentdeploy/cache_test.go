@@ -3,9 +3,9 @@ package agentdeploy
 import (
 	"testing"
 
+	"github.com/zhiweiyin318/addon-framework/pkg/addonmanager/addontesting"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"open-cluster-management.io/addon-framework/pkg/addonmanager/addontesting"
 	workapiv1 "open-cluster-management.io/api/work/v1"
 )
 

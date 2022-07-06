@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/zhiweiyin318/addon-framework/pkg/addonmanager/addontesting"
 	coordinationv1 "k8s.io/api/coordination/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -12,7 +13,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	kubefake "k8s.io/client-go/kubernetes/fake"
 	clienttesting "k8s.io/client-go/testing"
-	"open-cluster-management.io/addon-framework/pkg/addonmanager/addontesting"
 )
 
 const (
@@ -30,7 +30,7 @@ func TestReconcile(t *testing.T) {
 		leaseNamespace:       agentNs,
 	}
 
-	//create lease
+	// create lease
 	leaseReconciler.reconcile(context.TODO())
 	addontesting.AssertActions(t, kubeClient.Actions(), "get", "create")
 	lease := kubeClient.Actions()[1].(clienttesting.CreateActionImpl).Object.(*coordinationv1.Lease)
@@ -40,7 +40,7 @@ func TestReconcile(t *testing.T) {
 			lease.ObjectMeta.Namespace, agentNs)
 	}
 
-	//update lease
+	// update lease
 	kubeClient.ClearActions()
 	leaseReconciler.reconcile(context.TODO())
 	addontesting.AssertActions(t, kubeClient.Actions(), "get", "update")
@@ -75,7 +75,7 @@ func TestReconcileWithInvalidLease(t *testing.T) {
 		}
 	})
 
-	//create lease
+	// create lease
 	leaseReconciler.reconcile(context.TODO())
 	addontesting.AssertActions(t, hubClient.Actions(), "get", "create")
 
@@ -101,7 +101,7 @@ func TestReconcileWithHealthCheck(t *testing.T) {
 		},
 	}
 
-	//create lease
+	// create lease
 	leaseReconciler.reconcile(context.TODO())
 	addontesting.AssertNoActions(t, kubeClient.Actions())
 

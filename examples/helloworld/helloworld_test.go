@@ -6,10 +6,10 @@ import (
 	"os"
 	"testing"
 
+	"github.com/zhiweiyin318/addon-framework/pkg/addonfactory"
+	"github.com/zhiweiyin318/addon-framework/pkg/agent"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	utilrand "k8s.io/apimachinery/pkg/util/rand"
-	"open-cluster-management.io/addon-framework/pkg/addonfactory"
-	"open-cluster-management.io/addon-framework/pkg/agent"
 	addonapiv1alpha1 "open-cluster-management.io/api/addon/v1alpha1"
 	clusterv1 "open-cluster-management.io/api/cluster/v1"
 	"sigs.k8s.io/yaml"

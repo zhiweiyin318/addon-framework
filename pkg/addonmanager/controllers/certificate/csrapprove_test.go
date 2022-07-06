@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/zhiweiyin318/addon-framework/pkg/addonmanager/addontesting"
+	"github.com/zhiweiyin318/addon-framework/pkg/agent"
 	certv1 "k8s.io/api/certificates/v1"
 	certv1beta1 "k8s.io/api/certificates/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -12,8 +14,6 @@ import (
 	kubeinformers "k8s.io/client-go/informers"
 	fakekube "k8s.io/client-go/kubernetes/fake"
 	clienttesting "k8s.io/client-go/testing"
-	"open-cluster-management.io/addon-framework/pkg/addonmanager/addontesting"
-	"open-cluster-management.io/addon-framework/pkg/agent"
 	addonapiv1alpha1 "open-cluster-management.io/api/addon/v1alpha1"
 	fakeaddon "open-cluster-management.io/api/client/addon/clientset/versioned/fake"
 	addoninformers "open-cluster-management.io/api/client/addon/informers/externalversions"

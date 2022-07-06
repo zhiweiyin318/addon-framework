@@ -4,15 +4,16 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/zhiweiyin318/addon-framework/pkg/addonmanager/constants"
+	"github.com/zhiweiyin318/addon-framework/pkg/agent"
+	"github.com/zhiweiyin318/addon-framework/pkg/basecontroller/factory"
+	"github.com/zhiweiyin318/addon-framework/pkg/utils"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/klog/v2"
-	"open-cluster-management.io/addon-framework/pkg/addonmanager/constants"
-	"open-cluster-management.io/addon-framework/pkg/agent"
-	"open-cluster-management.io/addon-framework/pkg/basecontroller/factory"
 	addonapiv1alpha1 "open-cluster-management.io/api/addon/v1alpha1"
 	addonv1alpha1client "open-cluster-management.io/api/client/addon/clientset/versioned"
 	addoninformerv1alpha1 "open-cluster-management.io/api/client/addon/informers/externalversions/addon/v1alpha1"
@@ -143,7 +144,7 @@ func (c *addonHookDeployController) sync(ctx context.Context, syncCtx factory.Sy
 			Reason:  constants.AddonManifestAppliedReasonWorkApplyFailed,
 			Message: fmt.Sprintf("failed to get manifest from agent interface: %v", err),
 		})
-		if updateErr := patchCondition(ctx, c.addonClient, managedClusterAddon, managedClusterAddonCopy); updateErr != nil {
+		if updateErr := utils.PatchAddonCondition(ctx, c.addonClient, managedClusterAddon, managedClusterAddonCopy); updateErr != nil {
 			return fmt.Errorf("failed to update managedclusteraddon status: %v; the err should be %v", updateErr, err)
 		}
 		return err
@@ -161,7 +162,7 @@ func (c *addonHookDeployController) sync(ctx context.Context, syncCtx factory.Sy
 			Reason:  constants.AddonManifestAppliedReasonWorkApplyFailed,
 			Message: fmt.Sprintf("failed to build manifestwork: %v", err),
 		})
-		if updateErr := patchCondition(ctx, c.addonClient, managedClusterAddonCopy, managedClusterAddon); updateErr != nil {
+		if updateErr := utils.PatchAddonCondition(ctx, c.addonClient, managedClusterAddonCopy, managedClusterAddon); updateErr != nil {
 			return fmt.Errorf("failed to update managedclusteraddon status: %v; the err should be %v", updateErr, err)
 		}
 		return err
@@ -198,7 +199,7 @@ func (c *addonHookDeployController) sync(ctx context.Context, syncCtx factory.Sy
 			Reason:  constants.AddonManifestAppliedReasonWorkApplyFailed,
 			Message: fmt.Sprintf("failed to apply manifestwork: %v", err),
 		})
-		if updateErr := patchCondition(ctx, c.addonClient, managedClusterAddonCopy, managedClusterAddon); updateErr != nil {
+		if updateErr := utils.PatchAddonCondition(ctx, c.addonClient, managedClusterAddonCopy, managedClusterAddon); updateErr != nil {
 			return fmt.Errorf("failed to update managedclusteraddon status: %v; the err should be %v", updateErr, err)
 		}
 		return err
@@ -232,7 +233,7 @@ func (c *addonHookDeployController) sync(ctx context.Context, syncCtx factory.Sy
 		})
 	}
 
-	return patchCondition(ctx, c.addonClient, managedClusterAddonCopy, managedClusterAddon)
+	return utils.PatchAddonCondition(ctx, c.addonClient, managedClusterAddonCopy, managedClusterAddon)
 }
 
 // hookWorkIsCompleted checks the hook resources are completed.

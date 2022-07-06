@@ -14,7 +14,7 @@ env:
   GOPATH: '/home/runner/work/addon-framework/addon-framework/go'
 defaults:
   run:
-    working-directory: go/src/open-cluster-management.io/addon-framework
+    working-directory: go/src/github.com/zhiweiyin318/addon-framework
 
 jobs:
   verify:
@@ -25,7 +25,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 1
-          path: go/src/open-cluster-management.io/addon-framework
+          path: go/src/github.com/zhiweiyin318/addon-framework
       - name: install Go
         uses: actions/setup-go@v2
         with:
@@ -41,7 +41,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 1
-          path: go/src/open-cluster-management.io/addon-framework
+          path: go/src/github.com/zhiweiyin318/addon-framework
       - name: install Go
         uses: actions/setup-go@v2
         with:
@@ -57,7 +57,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 1
-          path: go/src/open-cluster-management.io/addon-framework
+          path: go/src/github.com/zhiweiyin318/addon-framework
       - name: install Go
         uses: actions/setup-go@v2
         with:
@@ -73,7 +73,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 1
-          path: go/src/open-cluster-management.io/addon-framework
+          path: go/src/github.com/zhiweiyin318/addon-framework
       - name: install Go
         uses: actions/setup-go@v2
         with:
@@ -89,7 +89,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 1
-          path: go/src/open-cluster-management.io/addon-framework
+          path: go/src/github.com/zhiweiyin318/addon-framework
       - name: install Go
         uses: actions/setup-go@v2
         with:
@@ -105,7 +105,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 1
-          path: go/src/open-cluster-management.io/addon-framework
+          path: go/src/github.com/zhiweiyin318/addon-framework
       - name: install Go
         uses: actions/setup-go@v2
         with:

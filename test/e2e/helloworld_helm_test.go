@@ -6,13 +6,13 @@ import (
 
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
+	"github.com/zhiweiyin318/addon-framework/pkg/addonmanager/constants"
 	corev1 "k8s.io/api/core/v1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/rand"
-	"open-cluster-management.io/addon-framework/pkg/addonmanager/constants"
 	addonapiv1alpha1 "open-cluster-management.io/api/addon/v1alpha1"
 )
 

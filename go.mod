@@ -1,4 +1,4 @@
-module open-cluster-management.io/addon-framework
+module github.com/zhiweiyin318/addon-framework
 
 go 1.17
 

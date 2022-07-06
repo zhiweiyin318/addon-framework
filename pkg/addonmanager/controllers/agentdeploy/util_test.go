@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/zhiweiyin318/addon-framework/pkg/addonmanager/addontesting"
 	"k8s.io/apimachinery/pkg/runtime"
-	"open-cluster-management.io/addon-framework/pkg/addonmanager/addontesting"
 	fakework "open-cluster-management.io/api/client/work/clientset/versioned/fake"
 	workinformers "open-cluster-management.io/api/client/work/informers/externalversions"
 	workapiv1 "open-cluster-management.io/api/work/v1"
@@ -46,7 +46,7 @@ func TestApplyWork(t *testing.T) {
 	if err != nil {
 		t.Errorf("failed to apply work with err %v", err)
 	}
-	addontesting.AssertActions(t, fakeWorkClient.Actions(), "update")
+	addontesting.AssertActions(t, fakeWorkClient.Actions(), "patch")
 
 	// Do not update if generation is not changed
 	work.Spec.DeleteOption = &workapiv1.DeleteOption{PropagationPolicy: workapiv1.DeletePropagationPolicyTypeForeground}
@@ -78,5 +78,5 @@ func TestApplyWork(t *testing.T) {
 	if err != nil {
 		t.Errorf("failed to apply work with err %v", err)
 	}
-	addontesting.AssertActions(t, fakeWorkClient.Actions(), "update")
+	addontesting.AssertActions(t, fakeWorkClient.Actions(), "patch")
 }

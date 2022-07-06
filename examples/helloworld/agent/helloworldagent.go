@@ -6,6 +6,10 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	"github.com/zhiweiyin318/addon-framework/examples/cmdfactory"
+	"github.com/zhiweiyin318/addon-framework/pkg/basecontroller/factory"
+	"github.com/zhiweiyin318/addon-framework/pkg/lease"
+	"github.com/zhiweiyin318/addon-framework/pkg/version"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -18,10 +22,6 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog/v2"
-	"open-cluster-management.io/addon-framework/examples/cmdfactory"
-	"open-cluster-management.io/addon-framework/pkg/basecontroller/factory"
-	"open-cluster-management.io/addon-framework/pkg/lease"
-	"open-cluster-management.io/addon-framework/pkg/version"
 	addonv1alpha1client "open-cluster-management.io/api/client/addon/clientset/versioned"
 )
 

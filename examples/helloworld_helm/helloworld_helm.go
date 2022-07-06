@@ -3,7 +3,7 @@ package helloworld_helm
 import (
 	"embed"
 
-	"open-cluster-management.io/addon-framework/pkg/addonfactory"
+	"github.com/zhiweiyin318/addon-framework/pkg/addonfactory"
 	addonapiv1alpha1 "open-cluster-management.io/api/addon/v1alpha1"
 	clusterv1 "open-cluster-management.io/api/cluster/v1"
 )

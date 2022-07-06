@@ -3,8 +3,8 @@ package utils
 import (
 	"fmt"
 
+	"github.com/zhiweiyin318/addon-framework/pkg/agent"
 	"k8s.io/apimachinery/pkg/types"
-	"open-cluster-management.io/addon-framework/pkg/agent"
 	workapiv1 "open-cluster-management.io/api/work/v1"
 )
 

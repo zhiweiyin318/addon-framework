@@ -4,12 +4,12 @@ import (
 	"context"
 
 	"github.com/spf13/cobra"
+	"github.com/zhiweiyin318/addon-framework/examples/cmdfactory"
+	"github.com/zhiweiyin318/addon-framework/pkg/version"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/klog/v2"
-	"open-cluster-management.io/addon-framework/examples/cmdfactory"
-	"open-cluster-management.io/addon-framework/pkg/version"
 )
 
 func NewAgentCommand(addonName string) *cobra.Command {

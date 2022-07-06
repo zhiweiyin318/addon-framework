@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"os"
 
+	helloworldagent "github.com/zhiweiyin318/addon-framework/examples/helloworld/agent"
+	"github.com/zhiweiyin318/addon-framework/examples/rbac"
+	"github.com/zhiweiyin318/addon-framework/pkg/addonfactory"
+	"github.com/zhiweiyin318/addon-framework/pkg/agent"
+	"github.com/zhiweiyin318/addon-framework/pkg/utils"
 	"k8s.io/client-go/rest"
-	helloworldagent "open-cluster-management.io/addon-framework/examples/helloworld/agent"
-	"open-cluster-management.io/addon-framework/examples/rbac"
-	"open-cluster-management.io/addon-framework/pkg/addonfactory"
-	"open-cluster-management.io/addon-framework/pkg/agent"
-	"open-cluster-management.io/addon-framework/pkg/utils"
 	addonapiv1alpha1 "open-cluster-management.io/api/addon/v1alpha1"
 	clusterv1 "open-cluster-management.io/api/cluster/v1"
 )
