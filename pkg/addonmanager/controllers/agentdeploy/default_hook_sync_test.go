@@ -42,7 +42,7 @@ func TestDefaultHookReconcile(t *testing.T) {
 		{
 			name:    "deploy hook manifest for a created addon, add finalizer",
 			key:     "cluster1/test",
-			addon:   []runtime.Object{addontesting.NewAddon("test", "cluster1")},
+			addon:   []runtime.Object{addontesting.NewAddonWithConditions("test", "cluster1", registionAppliedCondition)},
 			cluster: []runtime.Object{addontesting.NewManagedCluster("cluster1")},
 			testaddon: &testAgent{name: "test", objects: []runtime.Object{
 				addontesting.NewUnstructured("v1", "ConfigMap", "default", "test"),
@@ -69,7 +69,7 @@ func TestDefaultHookReconcile(t *testing.T) {
 			key:  "cluster1/test",
 			addon: []runtime.Object{
 				func() runtime.Object {
-					addon := addontesting.NewAddon("test", "cluster1")
+					addon := addontesting.NewAddonWithConditions("test", "cluster1", registionAppliedCondition)
 					addon.SetFinalizers([]string{addonapiv1alpha1.AddonPreDeleteHookFinalizer})
 					addon.DeletionTimestamp = &metav1.Time{Time: time.Now()}
 					return addon
@@ -106,7 +106,9 @@ func TestDefaultHookReconcile(t *testing.T) {
 			key:  "cluster1/test",
 			addon: []runtime.Object{
 				addontesting.SetAddonFinalizers(
-					addontesting.SetAddonDeletionTimestamp(addontesting.NewAddon("test", "cluster1"), time.Now()),
+					addontesting.SetAddonDeletionTimestamp(
+						addontesting.NewAddonWithConditions("test", "cluster1", registionAppliedCondition),
+						time.Now()),
 					addonapiv1alpha1.AddonPreDeleteHookFinalizer),
 			},
 			cluster: []runtime.Object{addontesting.NewManagedCluster("cluster1")},
@@ -187,7 +189,9 @@ func TestDefaultHookReconcile(t *testing.T) {
 			name: "deploy hook manifest for a deleting addon without finalizer, completed",
 			key:  "cluster1/test",
 			addon: []runtime.Object{
-				addontesting.SetAddonDeletionTimestamp(addontesting.NewAddon("test", "cluster1"), time.Now())},
+				addontesting.SetAddonDeletionTimestamp(
+					addontesting.NewAddonWithConditions("test", "cluster1", registionAppliedCondition),
+					time.Now())},
 			cluster: []runtime.Object{addontesting.NewManagedCluster("cluster1")},
 			testaddon: &testAgent{name: "test", objects: []runtime.Object{
 				addontesting.NewUnstructured("v1", "ConfigMap", "default", "test"),

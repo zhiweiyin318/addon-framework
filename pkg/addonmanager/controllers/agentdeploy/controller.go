@@ -2,17 +2,21 @@ package agentdeploy
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 
+	jsonpatch "github.com/evanphx/json-patch"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	errorsutil "k8s.io/apimachinery/pkg/util/errors"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/klog/v2"
 	addonapiv1alpha1 "open-cluster-management.io/api/addon/v1alpha1"
 	addonv1alpha1client "open-cluster-management.io/api/client/addon/clientset/versioned"
 	addoninformerv1alpha1 "open-cluster-management.io/api/client/addon/informers/externalversions/addon/v1alpha1"
@@ -29,7 +33,6 @@ import (
 	"open-cluster-management.io/addon-framework/pkg/addonmanager/constants"
 	"open-cluster-management.io/addon-framework/pkg/agent"
 	"open-cluster-management.io/addon-framework/pkg/basecontroller/factory"
-	"open-cluster-management.io/addon-framework/pkg/utils"
 )
 
 // addonDeployController deploy addon agent resources on the managed cluster.
@@ -169,6 +172,11 @@ func (c *addonDeployController) sync(ctx context.Context, syncCtx factory.SyncCo
 		return err
 	}
 
+	// to deploy agents after RegistrationApplied is true
+	if !meta.IsStatusConditionTrue(addon.Status.Conditions, addonapiv1alpha1.ManagedClusterAddOnRegistrationApplied) {
+		return nil
+	}
+
 	cluster, err := c.managedClusterLister.Get(clusterName)
 	if errors.IsNotFound(err) {
 		// the managedCluster is nil in this case,and sync cannot handle nil managedCluster.
@@ -205,6 +213,10 @@ func (c *addonDeployController) sync(ctx context.Context, syncCtx factory.SyncCo
 			getCluster:     c.managedClusterLister.Get,
 			getWorkByAddon: c.getWorksByAddonFn(hookByHostedAddon),
 			agentAddon:     agentAddon},
+		&healthCheckSyncer{
+			getWorkByAddon: c.getWorksByAddonFn(byAddon),
+			agentAddon:     agentAddon,
+		},
 	}
 
 	oldAddon := addon
@@ -232,7 +244,44 @@ func (c *addonDeployController) updateAddon(ctx context.Context, new, old *addon
 		return err
 	}
 
-	return utils.PatchAddonCondition(ctx, c.addonClient, new, old)
+	if equality.Semantic.DeepEqual(new.Status.HealthCheck, old.Status.HealthCheck) &&
+		equality.Semantic.DeepEqual(new.Status.Conditions, old.Status.Conditions) {
+		return nil
+	}
+
+	oldData, err := json.Marshal(&addonapiv1alpha1.ManagedClusterAddOn{
+		Status: addonapiv1alpha1.ManagedClusterAddOnStatus{
+			HealthCheck: old.Status.HealthCheck,
+			Conditions:  old.Status.Conditions,
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	newData, err := json.Marshal(&addonapiv1alpha1.ManagedClusterAddOn{
+		ObjectMeta: metav1.ObjectMeta{
+			UID:             new.UID,
+			ResourceVersion: new.ResourceVersion,
+		},
+		Status: addonapiv1alpha1.ManagedClusterAddOnStatus{
+			HealthCheck: new.Status.HealthCheck,
+			Conditions:  new.Status.Conditions,
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	patchBytes, err := jsonpatch.CreateMergePatch(oldData, newData)
+	if err != nil {
+		return fmt.Errorf("failed to create patch for addon %s: %w", new.Name, err)
+	}
+
+	klog.V(2).Infof("Patching addon %s/%s condition with %s", new.Namespace, new.Name, string(patchBytes))
+	_, err = c.addonClient.AddonV1alpha1().ManagedClusterAddOns(new.Namespace).Patch(
+		ctx, new.Name, types.MergePatchType, patchBytes, metav1.PatchOptions{}, "status")
+	return err
 }
 
 func (c *addonDeployController) applyWork(ctx context.Context, appliedType string,

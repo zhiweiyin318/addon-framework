@@ -115,9 +115,9 @@ func (c *addonConfigurationController) sync(ctx context.Context, syncCtx factory
 	registrationOption := agentAddon.GetAgentAddonOptions().Registration
 	if registrationOption == nil {
 		meta.SetStatusCondition(&managedClusterAddonCopy.Status.Conditions, metav1.Condition{
-			Type:    "RegistrationApplied",
+			Type:    addonapiv1alpha1.ManagedClusterAddOnRegistrationApplied,
 			Status:  metav1.ConditionTrue,
-			Reason:  "NilRegistration",
+			Reason:  addonapiv1alpha1.RegistrationAppliedNilRegistration,
 			Message: "Registration of the addon agent is configured",
 		})
 		return c.patchAddonStatus(ctx, managedClusterAddonCopy, managedClusterAddon)
@@ -127,9 +127,9 @@ func (c *addonConfigurationController) sync(ctx context.Context, syncCtx factory
 		err = registrationOption.PermissionConfig(managedCluster, managedClusterAddon)
 		if err != nil {
 			meta.SetStatusCondition(&managedClusterAddonCopy.Status.Conditions, metav1.Condition{
-				Type:    "RegistrationApplied",
+				Type:    addonapiv1alpha1.ManagedClusterAddOnRegistrationApplied,
 				Status:  metav1.ConditionFalse,
-				Reason:  "SetPermissionFailed",
+				Reason:  addonapiv1alpha1.RegistrationAppliedSetPermissionFailed,
 				Message: fmt.Sprintf("Failed to set permission for hub agent: %v", err),
 			})
 			if patchErr := c.patchAddonStatus(ctx, managedClusterAddonCopy, managedClusterAddon); patchErr != nil {
@@ -141,9 +141,9 @@ func (c *addonConfigurationController) sync(ctx context.Context, syncCtx factory
 
 	if registrationOption.CSRConfigurations == nil {
 		meta.SetStatusCondition(&managedClusterAddonCopy.Status.Conditions, metav1.Condition{
-			Type:    "RegistrationApplied",
+			Type:    addonapiv1alpha1.ManagedClusterAddOnRegistrationApplied,
 			Status:  metav1.ConditionTrue,
-			Reason:  "NilRegistration",
+			Reason:  addonapiv1alpha1.RegistrationAppliedNilRegistration,
 			Message: "Registration of the addon agent is configured",
 		})
 		return c.patchAddonStatus(ctx, managedClusterAddonCopy, managedClusterAddon)
@@ -156,6 +156,13 @@ func (c *addonConfigurationController) sync(ctx context.Context, syncCtx factory
 	if len(managedClusterAddonCopy.Spec.InstallNamespace) > 0 {
 		managedClusterAddonCopy.Status.Namespace = managedClusterAddonCopy.Spec.InstallNamespace
 	}
+
+	meta.SetStatusCondition(&managedClusterAddonCopy.Status.Conditions, metav1.Condition{
+		Type:    addonapiv1alpha1.ManagedClusterAddOnRegistrationApplied,
+		Status:  metav1.ConditionTrue,
+		Reason:  addonapiv1alpha1.RegistrationAppliedSetPermissionApplied,
+		Message: "Registration of the addon agent is configured",
+	})
 
 	return c.patchAddonStatus(ctx, managedClusterAddonCopy, managedClusterAddon)
 }

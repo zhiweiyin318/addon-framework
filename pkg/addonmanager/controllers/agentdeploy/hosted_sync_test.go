@@ -58,9 +58,10 @@ func TestHostingReconcile(t *testing.T) {
 		validateWorkActions  func(t *testing.T, actions []clienttesting.Action)
 	}{
 		{
-			name:                 "no cluster",
-			key:                  "cluster1/test",
-			addon:                []runtime.Object{addontesting.NewHostedModeAddon("test", "cluster1", "cluster2")},
+			name: "no cluster",
+			key:  "cluster1/test",
+			addon: []runtime.Object{addontesting.NewHostedModeAddon("test", "cluster1", "cluster2",
+				registionAppliedCondition)},
 			cluster:              []runtime.Object{},
 			existingWork:         []runtime.Object{},
 			validateAddonActions: addontesting.AssertNoActions,
@@ -70,9 +71,10 @@ func TestHostingReconcile(t *testing.T) {
 			}},
 		},
 		{
-			name:                 "no managed cluster",
-			key:                  "cluster1/test",
-			addon:                []runtime.Object{addontesting.NewHostedModeAddon("test", "cluster1", "cluster2")},
+			name: "no managed cluster",
+			key:  "cluster1/test",
+			addon: []runtime.Object{addontesting.NewHostedModeAddon("test", "cluster1", "cluster2",
+				registionAppliedCondition)},
 			cluster:              []runtime.Object{addontesting.NewManagedCluster("cluster2")},
 			existingWork:         []runtime.Object{},
 			validateAddonActions: addontesting.AssertNoActions,
@@ -82,9 +84,10 @@ func TestHostingReconcile(t *testing.T) {
 			}},
 		},
 		{
-			name:         "no hosting cluster",
-			key:          "cluster1/test",
-			addon:        []runtime.Object{addontesting.NewHostedModeAddon("test", "cluster1", "cluster2")},
+			name: "no hosting cluster",
+			key:  "cluster1/test",
+			addon: []runtime.Object{addontesting.NewHostedModeAddon("test", "cluster1", "cluster2",
+				registionAppliedCondition)},
 			cluster:      []runtime.Object{addontesting.NewManagedCluster("cluster1")},
 			existingWork: []runtime.Object{},
 			validateAddonActions: func(t *testing.T, actions []clienttesting.Action) {
@@ -118,9 +121,10 @@ func TestHostingReconcile(t *testing.T) {
 			}},
 		},
 		{
-			name:  "add finalizer",
-			key:   "cluster1/test",
-			addon: []runtime.Object{addontesting.NewHostedModeAddon("test", "cluster1", "cluster2")},
+			name: "add finalizer",
+			key:  "cluster1/test",
+			addon: []runtime.Object{addontesting.NewHostedModeAddon("test", "cluster1", "cluster2",
+				registionAppliedCondition)},
 			cluster: []runtime.Object{
 				addontesting.NewManagedCluster("cluster1"),
 				addontesting.NewManagedCluster("cluster2"),
@@ -145,9 +149,10 @@ func TestHostingReconcile(t *testing.T) {
 			}},
 		},
 		{
-			name:  "deploy manifests for an addon",
-			key:   "cluster1/test",
-			addon: []runtime.Object{addontesting.NewHostedModeAddonWithFinalizer("test", "cluster1", "cluster2")},
+			name: "deploy manifests for an addon",
+			key:  "cluster1/test",
+			addon: []runtime.Object{addontesting.NewHostedModeAddonWithFinalizer("test", "cluster1", "cluster2",
+				registionAppliedCondition)},
 			cluster: []runtime.Object{
 				addontesting.NewManagedCluster("cluster1"),
 				addontesting.NewManagedCluster("cluster2"),
@@ -181,9 +186,10 @@ func TestHostingReconcile(t *testing.T) {
 			},
 		},
 		{
-			name:  "update manifest for an addon",
-			key:   "cluster1/test",
-			addon: []runtime.Object{addontesting.NewHostedModeAddonWithFinalizer("test", "cluster1", "cluster2")},
+			name: "update manifest for an addon",
+			key:  "cluster1/test",
+			addon: []runtime.Object{addontesting.NewHostedModeAddonWithFinalizer("test", "cluster1", "cluster2",
+				registionAppliedCondition)},
 			cluster: []runtime.Object{
 				addontesting.NewManagedCluster("cluster1"),
 				addontesting.NewManagedCluster("cluster2"),
@@ -232,9 +238,10 @@ func TestHostingReconcile(t *testing.T) {
 			},
 		},
 		{
-			name:  "do not update manifest for an addon",
-			key:   "cluster1/test",
-			addon: []runtime.Object{addontesting.NewHostedModeAddonWithFinalizer("test", "cluster1", "cluster2")},
+			name: "do not update manifest for an addon",
+			key:  "cluster1/test",
+			addon: []runtime.Object{addontesting.NewHostedModeAddonWithFinalizer("test", "cluster1", "cluster2",
+				registionAppliedCondition)},
 			cluster: []runtime.Object{
 				addontesting.NewManagedCluster("cluster1"),
 				addontesting.NewManagedCluster("cluster2"),
@@ -280,9 +287,10 @@ func TestHostingReconcile(t *testing.T) {
 			},
 		},
 		{
-			name:  "get error when run manifest from agent",
-			key:   "cluster1/test",
-			addon: []runtime.Object{addontesting.NewHostedModeAddonWithFinalizer("test", "cluster1", "cluster2")},
+			name: "get error when run manifest from agent",
+			key:  "cluster1/test",
+			addon: []runtime.Object{addontesting.NewHostedModeAddonWithFinalizer("test", "cluster1", "cluster2",
+				registionAppliedCondition)},
 			cluster: []runtime.Object{
 				addontesting.NewManagedCluster("cluster1"),
 				addontesting.NewManagedCluster("cluster2"),
@@ -330,7 +338,8 @@ func TestHostingReconcile(t *testing.T) {
 			name: "delete finalizer",
 			key:  "cluster1/test",
 			addon: []runtime.Object{addontesting.SetAddonDeletionTimestamp(
-				addontesting.NewHostedModeAddonWithFinalizer("test", "cluster1", "cluster2"),
+				addontesting.NewHostedModeAddonWithFinalizer("test", "cluster1", "cluster2",
+					registionAppliedCondition),
 				time.Now(),
 			)},
 			cluster: []runtime.Object{

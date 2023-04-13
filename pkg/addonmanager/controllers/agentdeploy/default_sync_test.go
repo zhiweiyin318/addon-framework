@@ -28,6 +28,13 @@ import (
 	"open-cluster-management.io/addon-framework/pkg/agent"
 )
 
+var registionAppliedCondition = metav1.Condition{
+	Type:    addonapiv1alpha1.ManagedClusterAddOnRegistrationApplied,
+	Status:  metav1.ConditionTrue,
+	Reason:  addonapiv1alpha1.RegistrationAppliedSetPermissionApplied,
+	Message: "Registration of the addon agent is configured",
+}
+
 type testAgent struct {
 	name    string
 	objects []runtime.Object
@@ -81,7 +88,7 @@ func TestDefaultReconcile(t *testing.T) {
 		{
 			name:    "deploy manifests for an addon",
 			key:     "cluster1/test",
-			addon:   []runtime.Object{addontesting.NewAddon("test", "cluster1")},
+			addon:   []runtime.Object{addontesting.NewAddonWithConditions("test", "cluster1", registionAppliedCondition)},
 			cluster: []runtime.Object{addontesting.NewManagedCluster("cluster1")},
 			testaddon: &testAgent{name: "test", objects: []runtime.Object{
 				addontesting.NewUnstructured("v1", "ConfigMap", "default", "test"),
@@ -109,7 +116,7 @@ func TestDefaultReconcile(t *testing.T) {
 		{
 			name:    "update manifest for an addon",
 			key:     "cluster1/test",
-			addon:   []runtime.Object{addontesting.NewAddon("test", "cluster1")},
+			addon:   []runtime.Object{addontesting.NewAddonWithConditions("test", "cluster1", registionAppliedCondition)},
 			cluster: []runtime.Object{addontesting.NewManagedCluster("cluster1")},
 			testaddon: &testAgent{name: "test", objects: []runtime.Object{
 				addontesting.NewUnstructured("v1", "ConfigMap", "default", "test"),
@@ -152,7 +159,7 @@ func TestDefaultReconcile(t *testing.T) {
 		{
 			name:    "do not update manifest for an addon",
 			key:     "cluster1/test",
-			addon:   []runtime.Object{addontesting.NewAddon("test", "cluster1")},
+			addon:   []runtime.Object{addontesting.NewAddonWithConditions("test", "cluster1", registionAppliedCondition)},
 			cluster: []runtime.Object{addontesting.NewManagedCluster("cluster1")},
 			testaddon: &testAgent{name: "test", objects: []runtime.Object{
 				addontesting.NewUnstructured("v1", "ConfigMap", "default", "test"),
@@ -193,7 +200,7 @@ func TestDefaultReconcile(t *testing.T) {
 		{
 			name:    "get error when run manifest from agent",
 			key:     "cluster1/test",
-			addon:   []runtime.Object{addontesting.NewAddon("test", "cluster1")},
+			addon:   []runtime.Object{addontesting.NewAddonWithConditions("test", "cluster1", registionAppliedCondition)},
 			cluster: []runtime.Object{addontesting.NewManagedCluster("cluster1")},
 			testaddon: &testAgent{
 				name: "test",
