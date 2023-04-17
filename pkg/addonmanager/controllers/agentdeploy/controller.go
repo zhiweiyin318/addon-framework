@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"k8s.io/klog/v2"
 	"strings"
 
 	jsonpatch "github.com/evanphx/json-patch"
@@ -16,7 +17,6 @@ import (
 	errorsutil "k8s.io/apimachinery/pkg/util/errors"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/klog/v2"
 	addonapiv1alpha1 "open-cluster-management.io/api/addon/v1alpha1"
 	addonv1alpha1client "open-cluster-management.io/api/client/addon/clientset/versioned"
 	addoninformerv1alpha1 "open-cluster-management.io/api/client/addon/informers/externalversions/addon/v1alpha1"
@@ -278,9 +278,11 @@ func (c *addonDeployController) updateAddon(ctx context.Context, new, old *addon
 		return fmt.Errorf("failed to create patch for addon %s: %w", new.Name, err)
 	}
 
-	klog.V(2).Infof("Patching addon %s/%s condition with %s", new.Namespace, new.Name, string(patchBytes))
 	_, err = c.addonClient.AddonV1alpha1().ManagedClusterAddOns(new.Namespace).Patch(
 		ctx, new.Name, types.MergePatchType, patchBytes, metav1.PatchOptions{}, "status")
+	if errors.IsConflict(err) {
+		klog.Infof("old status %+v \n new status %+v \n", old.Status, new.Status)
+	}
 	return err
 }
 
@@ -299,7 +301,12 @@ func (c *addonDeployController) applyWork(ctx context.Context, appliedType strin
 	}
 
 	// Update addon status based on work's status
-	if meta.IsStatusConditionTrue(work.Status.Conditions, workapiv1.WorkApplied) {
+	appliedCond := meta.FindStatusCondition(work.Status.Conditions, workapiv1.WorkApplied)
+	if appliedCond == nil {
+		return work, nil
+	}
+
+	if appliedCond.Status == metav1.ConditionFalse {
 		meta.SetStatusCondition(&addon.Status.Conditions, metav1.Condition{
 			Type:    appliedType,
 			Status:  metav1.ConditionTrue,
